@@ -50,27 +50,38 @@ def welcome():
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     # Create our session (link) from Python to the DB
+    
+    # Grab the precipitation data for the past 12 months
     session = Session(engine)
     results = { date: prcp for date,prcp in session.query(Measurement.date,Measurement.prcp).filter(Measurement.date >= "2016-08-23").all() }
     
     session.close()
+    
+    #Jsonify the results
     return jsonify(results)
     
 
 @app.route("/api/v1.0/stations")
 def stations():
     # Create our session (link) from Python to the DB
+    # Grab the list of all of the active stations with their names
     session = Session(engine)
     results = { id: name for id,name in session.query(Station.station, Station.name).all()}
     
     session.close()
+    
+    # Jsonify the results
     return jsonify(results)
     
 
 @app.route("/api/v1.0/tobs")
 def tobs():
     # Create our session (link) from Python to the DB
+
     session = Session(engine)
+    
+    # Grab the last 12 months in temperature data for the most active station (from the notebook, is it determined to be USC00519281)
+    
     results = { date: temp for date,temp in session.query(Measurement.date, Measurement.tobs).filter((Measurement.date>="2016-08-23") & (Measurement.station == 'USC00519281')).all()}
     
     session.close()
@@ -85,6 +96,8 @@ def start(start, end ='2017-08-23'):
             func.min(Measurement.tobs), 
             func.max(Measurement.tobs)] 
     # Create our session (link) from Python to the DB
+    # Calculate the minimum, maximum and average temperatures within the range of the start date within the past 12 months.
+    # By default if no end date is provided, the end date is set to 2017-08-23
     session = Session(engine) 
     results = session.query(*sel).\
         filter(Measurement.date >= start).filter(Measurement.date <= end).all()
@@ -112,6 +125,8 @@ def starttoend(start, end ='2017-08-23'):
             func.min(Measurement.tobs), 
             func.max(Measurement.tobs)] 
     # Create our session (link) from Python to the DB
+    # Calculate the minimum, maximum and average temperatures within the range of the start date within the past 12 months.
+    # By default if no end date is provided, the end date is set to 2017-08-23
     session = Session(engine) 
     
     results_list = []
